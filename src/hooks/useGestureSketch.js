@@ -89,7 +89,7 @@ export function useGestureSketch() {
     const url = engine.toDataURL();
     const link = document.createElement('a');
     link.href = url;
-    link.download = `arimarc-${Date.now()}.png`;
+    link.download = `airmarc-${Date.now()}.png`;
     link.click();
     setCaptureFlash(true);
     setTimeout(() => setCaptureFlash(false), 260);

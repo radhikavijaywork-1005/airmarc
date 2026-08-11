@@ -94,7 +94,7 @@ export default function GestureSketch() {
           <CursorIndicator ref={cursorRef} gestureLabel={gestureLabel} handPresent={handPresent} />
 
           <div className="hud">
-            <div className="hud-title">Arimarc</div>
+            <div className="hud-title">Airmarc</div>
             <ul className="gesture-legend">
               {GESTURE_LEGEND.map((g) => (
                 <li
