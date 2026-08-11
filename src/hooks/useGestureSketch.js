@@ -48,6 +48,7 @@ export function useGestureSketch() {
   const [stampHint, setStampHint] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(true);
   const stampHintShownRef = useRef(
     typeof window !== 'undefined' && window.localStorage.getItem(STAMP_HINT_STORAGE_KEY) === '1',
   );
@@ -69,6 +70,8 @@ export function useGestureSketch() {
     const timer = setTimeout(() => setStampHint(false), STAMP_HINT_MS);
     return () => clearTimeout(timer);
   }, [activeToolId]);
+
+  const dismissGuide = useCallback(() => setGuideOpen(false), []);
 
   const registerHitbox = useCallback((id, el) => {
     if (el) hitboxesRef.current.set(id, el);
@@ -380,11 +383,21 @@ export function useGestureSketch() {
       // and bringing both hands' thumb+index tips together forms a heart.
       // None of these leave anything on the sketch — that's what the
       // palette's stamp tool (select, then pinch-and-release) is for.
+      //
+      // Gated on the *committed* gesture (not the raw per-frame read) and
+      // skipped entirely while a work gesture is active — otherwise a
+      // single noisy frame mid-stroke (point briefly misread, or a
+      // spurious second-hand detection near the drawing hand) was enough
+      // to pop a balloon or heart while actually drawing.
+      const isWorkGesture =
+        gesture === GESTURE.POINT || gesture === GESTURE.PALM || gesture === GESTURE.PINCH;
       const secondLandmarks = result.landmarks?.[1];
       let comboKey = 'none';
       let heartMid = null;
 
-      if (secondLandmarks && isHeartShape(landmarks, secondLandmarks)) {
+      if (isWorkGesture) {
+        comboKey = 'none';
+      } else if (secondLandmarks && isHeartShape(landmarks, secondLandmarks)) {
         comboKey = 'heart';
         const a = fingertipPoint(landmarks);
         const b = fingertipPoint(secondLandmarks);
@@ -394,12 +407,12 @@ export function useGestureSketch() {
           engine.canvas.height,
         );
       } else if (secondLandmarks) {
-        const secondRaw = classifyGesture(secondLandmarks);
-        if (REACTION_GESTURES.has(raw) && raw === secondRaw) {
-          comboKey = `combo:${raw}`;
+        const secondGesture = classifyGesture(secondLandmarks);
+        if (REACTION_GESTURES.has(gesture) && gesture === secondGesture) {
+          comboKey = `combo:${gesture}`;
         }
-      } else if (REACTION_GESTURES.has(raw)) {
-        comboKey = `single:${raw}`;
+      } else if (REACTION_GESTURES.has(gesture)) {
+        comboKey = `single:${gesture}`;
       }
 
       const committedCombo = comboDebouncerRef.current.update(comboKey);
@@ -434,7 +447,7 @@ export function useGestureSketch() {
     [processDwell, checkpoint],
   );
 
-  const { videoRef, status, error } = useHandTracking(onResults);
+  const { videoRef, status, stage, error } = useHandTracking(onResults);
 
   return {
     containerRef,
@@ -444,7 +457,10 @@ export function useGestureSketch() {
     cursorRef,
     videoRef,
     status,
+    stage,
     error,
+    guideOpen,
+    dismissGuide,
     activeToolId,
     setActiveToolId,
     activeColor,

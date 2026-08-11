@@ -31,6 +31,32 @@ const COMBO_LEGEND = [
   { icon: '💗', tooltip: 'Touch fingertips of both hands → hearts' },
 ];
 
+// Same motif as the favicon (a drawn line trailing into a glowing cursor
+// dot), reused here so the loading and guide screens read as the same
+// brand mark rather than introducing a second logo.
+function AirmarcMark() {
+  return (
+    <svg viewBox="0 0 48 48" width="30" height="30" aria-hidden="true">
+      <path
+        d="M9 34C13 23 20 14 33 12.5"
+        fill="none"
+        stroke="#f5f2ea"
+        strokeWidth="3.4"
+        strokeLinecap="round"
+      />
+      <circle cx="35" cy="12" r="6.5" fill="#5ad1ff" opacity="0.32" />
+      <circle cx="35" cy="12" r="3.4" fill="#5ad1ff" />
+    </svg>
+  );
+}
+
+const GUIDE_ITEMS = [
+  { icon: '☝️', title: 'Draw', desc: 'Point index finger to draw' },
+  { icon: '✋', title: 'Erase', desc: 'Sweep open palm to erase' },
+  { icon: '🤏', title: 'Move', desc: 'Pinch to grab & reposition' },
+  { icon: '✊', title: 'Idle', desc: 'Close fist to pause' },
+];
+
 export default function GestureSketch() {
   const {
     containerRef,
@@ -40,7 +66,10 @@ export default function GestureSketch() {
     cursorRef,
     videoRef,
     status,
+    stage,
     error,
+    guideOpen,
+    dismissGuide,
     activeToolId,
     setActiveToolId,
     activeColor,
@@ -132,17 +161,86 @@ export default function GestureSketch() {
             </div>
           </div>
 
-          {status === 'loading' && (
-            <div className="status-banner">Loading hand tracking…</div>
-          )}
-          {status === 'error' && (
-            <div className="status-banner status-error">
-              Couldn't access the camera or hand-tracking model{error ? `: ${error}` : '.'}
-            </div>
-          )}
+          <AnimatePresence>
+            {status === 'loading' && (
+              <motion.div
+                className="fullscreen-status"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <div className="status-badge">
+                  <AirmarcMark />
+                </div>
+                <div className="status-text">
+                  {stage === 'camera' ? 'Requesting camera access…' : 'Loading hand-tracking model…'}
+                </div>
+                <div className="status-progress">
+                  <div className="status-progress-fill" />
+                </div>
+              </motion.div>
+            )}
+
+            {status === 'error' && (
+              <motion.div
+                className="fullscreen-status"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <div className="status-badge status-badge-error">
+                  <AirmarcMark />
+                </div>
+                <div className="status-text status-text-error">
+                  Couldn't access the camera or hand-tracking model{error ? `: ${error}` : '.'}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <AnimatePresence>
-            {status === 'ready' && calibration !== 'ready' && (
+            {status === 'ready' && guideOpen && (
+              <motion.div
+                className="fullscreen-status guide-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+              >
+                <motion.div
+                  className="guide-card"
+                  initial={{ opacity: 0, y: 16, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.98 }}
+                  transition={{ type: 'spring', visualDuration: 0.35, bounce: 0.15 }}
+                >
+                  <div className="status-badge">
+                    <AirmarcMark />
+                  </div>
+                  <div className="guide-title">Draw in the air</div>
+                  <div className="guide-grid">
+                    {GUIDE_ITEMS.map((item) => (
+                      <div className="guide-item" key={item.title}>
+                        <span className="guide-item-icon">{item.icon}</span>
+                        <div>
+                          <div className="guide-item-title">{item.title}</div>
+                          <div className="guide-item-desc">{item.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button type="button" className="guide-cta" onClick={dismissGuide}>
+                    Let's Go!
+                  </button>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence>
+            {status === 'ready' && !guideOpen && calibration !== 'ready' && (
               <motion.div
                 className="calibration-card"
                 initial={{ opacity: 0, y: 8 }}

@@ -438,24 +438,167 @@
   max-width: 240px;
 }
 
-.status-banner {
+/* --- fullscreen loading / error states --- */
+
+.fullscreen-status {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 10px 18px;
-  border-radius: 10px;
-  background: rgba(20, 20, 24, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 13px;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: #0a0a0c;
+  pointer-events: auto;
 }
 
-.status-banner.status-error {
+.status-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 40%, rgba(90, 209, 255, 0.28), rgba(90, 209, 255, 0.08) 70%);
+  box-shadow: 0 0 40px rgba(90, 209, 255, 0.25);
+}
+
+.status-badge-error {
+  background: radial-gradient(circle at 50% 40%, rgba(255, 138, 138, 0.28), rgba(255, 138, 138, 0.08) 70%);
+  box-shadow: 0 0 40px rgba(255, 138, 138, 0.2);
+}
+
+.status-text {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.status-text-error {
+  max-width: 320px;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 14px;
   color: #ff8a8a;
-  border-color: rgba(255, 138, 138, 0.3);
+}
+
+.status-progress {
+  width: 160px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.status-progress-fill {
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+  background: #5ad1ff;
+  animation: statusProgressSlide 1.3s ease-in-out infinite;
+}
+
+@keyframes statusProgressSlide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-progress-fill {
+    animation: none;
+    width: 100%;
+  }
+}
+
+/* --- pre-start guide card --- */
+
+.guide-backdrop {
+  background: rgba(6, 6, 8, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.guide-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(400px, calc(100vw - 48px));
+  padding: 32px 30px 28px;
+  border-radius: 24px;
+  background: #17171c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(255, 255, 255, 0.16);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+}
+
+.guide-title {
+  margin-top: 4px;
+  font-size: 24px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 18px;
+  width: 100%;
+  margin: 22px 0 26px;
+}
+
+.guide-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.guide-item-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 16px;
+}
+
+.guide-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.guide-item-desc {
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.guide-cta {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #6fe0ff 0%, #3fa9ff 100%);
+  color: #06222e;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 28px rgba(63, 169, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.guide-cta:hover {
+  filter: brightness(1.05);
 }
 
 /* --- tool palette --- */

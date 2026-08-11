@@ -16,6 +16,7 @@ export function useHandTracking(onResults) {
   onResultsRef.current = onResults;
 
   const [status, setStatus] = useState('loading'); // loading | ready | error
+  const [stage, setStage] = useState('model'); // model | camera (only meaningful while status is loading)
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -35,6 +36,9 @@ export function useHandTracking(onResults) {
           runningMode: 'VIDEO',
           numHands: 2,
         });
+
+        if (cancelled) return;
+        setStage('camera');
 
         stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 1280, height: 720, facingMode: 'user' },
@@ -80,5 +84,5 @@ export function useHandTracking(onResults) {
     };
   }, []);
 
-  return { videoRef, status, error };
+  return { videoRef, status, stage, error };
 }
